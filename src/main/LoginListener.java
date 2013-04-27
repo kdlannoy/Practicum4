@@ -6,6 +6,10 @@ package main;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -13,6 +17,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JTextField;
+import network.Network;
 
 /**
  *
@@ -22,7 +27,7 @@ public class LoginListener implements ActionListener {
 
     private JTextField usernametf;
     private JTextField portnumbertf;
-    private boolean correct = true;
+    private boolean correct = true;  
 
     public LoginListener(JTextField usernametf, JTextField portnumbertf) {
         this.usernametf = usernametf;
@@ -46,6 +51,15 @@ public class LoginListener implements ActionListener {
             JMenuItem mi = new JMenuItem("Connect...");
             menu.add(mi);
             mb.add(menu);
+            
+            eventbroker.EventBroker.getEventBroker().start();
+            
+            Network network = new Network(Integer.parseInt(portnumbertf.getText()));
+            try {
+                network.connect(InetAddress.getLocalHost(), 2345);
+            } catch (UnknownHostException ex) {
+                Logger.getLogger(LoginListener.class.getName()).log(Level.SEVERE, null, ex);
+            }
 
             mi.addActionListener(new ActionListener() {
 
@@ -59,6 +73,7 @@ public class LoginListener implements ActionListener {
                 }
             });
 
+            chatvenster.repaint();
 
             chatvenster.setVisible(true);
             chatvenster.pack();

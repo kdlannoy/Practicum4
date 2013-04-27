@@ -38,7 +38,7 @@ public class Network extends eventbroker.EventPublisher implements EventListener
          * 
          * listener laten starten met luisteren
          */
-        lijst = new ArrayList<Connection>();
+        lijst = new ArrayList<>();
         listener = new ConnectionListener(this, serverPort);
         new Thread(listener).start();
 
