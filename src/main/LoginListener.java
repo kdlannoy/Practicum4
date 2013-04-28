@@ -4,18 +4,18 @@
  */
 package main;
 
+import chat.ChatPanel;
+import eventbroker.EventBroker;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.JDialog;
+import javax.swing.AbstractAction;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 import network.Network;
 
@@ -27,7 +27,7 @@ public class LoginListener implements ActionListener {
 
     private JTextField usernametf;
     private JTextField portnumbertf;
-    private boolean correct = true;  
+    private boolean correct = true;
 
     public LoginListener(JTextField usernametf, JTextField portnumbertf) {
         this.usernametf = usernametf;
@@ -51,28 +51,45 @@ public class LoginListener implements ActionListener {
             JMenuItem mi = new JMenuItem("Connect...");
             menu.add(mi);
             mb.add(menu);
-            
-            eventbroker.EventBroker.getEventBroker().start();
-            
-            Network network = new Network(Integer.parseInt(portnumbertf.getText()));
-            try {
-                network.connect(InetAddress.getLocalHost(), 2345);
-            } catch (UnknownHostException ex) {
-                Logger.getLogger(LoginListener.class.getName()).log(Level.SEVERE, null, ex);
-            }
 
-            mi.addActionListener(new ActionListener() {
+//            eventbroker.EventBroker.getEventBroker().start();
+//            
+//            Network network = new Network(Integer.parseInt(portnumbertf.getText()));
+//            try {
+//                network.connect(InetAddress.getLocalHost(), 2345);
+//            } catch (UnknownHostException ex) {
+//                Logger.getLogger(LoginListener.class.getName()).log(Level.SEVERE, null, ex);
+//            }
+//
+//            mi.addActionListener(new ActionListener() {
+//
+//                @Override
+//                public void actionPerformed(ActionEvent e) {
+//                    JDialog dialog = new JDialog(chatvenster, "Dialoog", true);
+//                    dialog.add(new JLabel("Insert IP address and server port"));
+//                    dialog.add(new JTextField());
+//                    //veranderen naar showdialog
+//                    dialog.setVisible(true);
+//                }
+//            });
 
+            EventBroker.getEventBroker().start();
+            final Network nwServer = new Network(Integer.parseInt(portnumbertf.getText()));
+            ChatPanel cp = ChatPanel.createChat(usernametf.getText());
+            chatvenster.getRootPane().setDefaultButton(cp.getjButton1());
+            JMenuBar menubar = new JMenuBar();
+            menubar.add(new JMenu("Menu").add(new JMenuItem(new AbstractAction("Connect ...") {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    JDialog dialog = new JDialog(chatvenster, "Dialoog", true);
-                    dialog.add(new JLabel("Insert IP address and server port"));
-                    dialog.add(new JTextField());
-                    //veranderen naar showdialog
-                    dialog.setVisible(true);
+                    String address = (String) JOptionPane.showInputDialog(chatvenster, "Insert IP address and port number");
+                    try {
+                        nwServer.connect(InetAddress.getByName(address.split(":")[0]), Integer.parseInt(address.split(":")[1]));
+                    } catch (UnknownHostException ex) {
+                        System.out.println(ex);
+                    }
                 }
-            });
-
+            })));
+            chatvenster.setJMenuBar(menubar);
             chatvenster.repaint();
 
             chatvenster.setVisible(true);

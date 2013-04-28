@@ -29,6 +29,16 @@ public class ChatModel {
         fireStateChanged();
         
     }
+
+    public List<ChatMessage> getBerichten() {
+        return berichten;
+    }
+
+    public List<ChangeListener> getLuisteraars() {
+        return luisteraars;
+    }
+    
+    
     
     public void addChangeListener(ChangeListener l){
         luisteraars.add(l);

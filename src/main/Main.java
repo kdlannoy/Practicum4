@@ -22,6 +22,7 @@ public class Main {
         JFrame loginvenster = new JFrame("SO2 Demo");
         loginvenster.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         JPanel paneel = new JPanel();
+        
         JButton login = new JButton("Login");
         JLabel username = new JLabel("Username:");
         JLabel portnumber = new JLabel("Port number:");

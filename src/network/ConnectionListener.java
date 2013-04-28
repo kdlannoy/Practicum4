@@ -1,47 +1,47 @@
 package network;
 
 // listens for incoming connections
-import eventbroker.Event;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-public class ConnectionListener implements Runnable {
+public class ConnectionListener extends Thread {
 
-    private ServerSocket server = null;
-    private Network netwerk = null; // de server
-    private boolean run = false;
+    private Network network;
+    private int serverPort;
+    private Connection connection = null;
+    private ServerSocket listen;
 
     public ConnectionListener(Network network, int serverPort) {
-        this.netwerk = network;
+        this.network = network;
+        this.serverPort = serverPort;
         try {
-            server = new ServerSocket(serverPort);
+            listen = new ServerSocket(serverPort);
+        } catch (IOException e) {
+            System.err.println(e);
+        }
+    }
+
+    @Override
+    public void run() {
+        try {
+            //while (true) {
+                Socket client = listen.accept();
+                connection = network.connect(client);
+            //}
         } catch (IOException e) {
             System.err.println(e);
         }
     }
 
     public void terminate() {
-        run = false;
-        if (server != null) {
-            try {
-                server.close();
-            } catch (IOException e) {
-                System.err.println(e);
+        try {
+            listen.close();
+            if(connection != null) {
+                connection.close();
             }
-        }
-    }
-
-    @Override
-    public void run() {
-        run = true;
-        while (run) {
-            try {
-                Socket socket = server.accept();
-                netwerk.connect(socket); //verbinden met de server
-            } catch (IOException e) {
-                System.err.println(e);
-            }
+        } catch (IOException e) {
+            System.out.println(e);
         }
     }
 }

@@ -6,98 +6,66 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 
-/*
- * Versturen en ontvangen van events 
- * 
- * 
- * 
- */
 public class Connection {
-    /*
-     * Verbinding tussen server en client
-     */
 
-    private Socket socket = null;
-    private ObjectInputStream input = null;
-    private ObjectOutputStream output = null;
-    private Network network = null;
-    private boolean running = false;
+    private Socket socket;
+    private ObjectInputStream input;
+    private ObjectOutputStream output;
+    private Network network;
+    private boolean connected;
 
     public Connection(Socket socket, Network network) {
-        this.socket = socket;
-        this.network = network;
         try {
+            this.socket = socket;
+            this.network = network;
             output = new ObjectOutputStream(socket.getOutputStream());
             output.flush();
             input = new ObjectInputStream(socket.getInputStream());
+            connected = true;
+
         } catch (IOException e) {
             System.err.println(e);
         }
-
-
-
     }
 
     public void send(Event e) {
         try {
             output.writeObject(e);
             output.flush();
-
-        } catch (IOException er) {
-            System.err.println(er);
+        } catch (IOException ex) {
+            System.err.println(ex);
         }
     }
 
     public void receive() {
-        running = true;
-        new Thread(new ReceiverThread()).start();
-
-
+        new ReceiverThread().start();
     }
 
-    public void close() {
-        running = false;
-        try {
-            if (input != null) {
-                input.close();
-            }
-            if (output != null) {
-                output.close();
-            }
-            if(socket != null){
-                socket.close();
-            }
-        } catch (IOException e) {
-            System.err.println(e);
-        }
-    }
-    
-    private void RemoveMyself(){
-        network.disconnect(this);
-    }
-
-    public class ReceiverThread implements Runnable {
+    private class ReceiverThread extends Thread {
 
         @Override
         public void run() {
+            try {
+                while (true) {
+                    if (input != null) {
+                        Event e = (Event) input.readObject();
+                        network.publishEvent(e);
 
-            do {
-
-                //event binnenkrijgen
-                try {
-                    eventbroker.Event event = (eventbroker.Event) input.readObject();
-                    network.publishEvent(event);
-                } catch (IOException e) {
-                    System.err.println(e);
-                    running = false; // als het een IOException is, dan kan het zijn dat er geen verbinding meer is tussen server en client
-                    if(!socket.isConnected()){
-                        RemoveMyself();
+                        if (!connected) {
+                            return;
+                        }
                     }
-                } catch (ClassNotFoundException ex) {
-                    System.err.println(ex);
                 }
-            } while (running);
-
+            } catch (IOException e) {
+                //System.err.println(e);
+                // Als de client afgesloten zal hier een SocketException optreden
+            } catch (ClassNotFoundException e) {
+                System.err.println(e);
+            }
         }
+    }
+
+    public void close() {
+        connected = false;
     }
 }
