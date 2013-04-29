@@ -11,6 +11,8 @@
 package chat;
 
 import java.lang.reflect.InvocationTargetException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JButton;
@@ -40,8 +42,6 @@ public class ChatPanel extends javax.swing.JPanel implements ChangeListener, Run
     public void setController(ChatController controller) {
         this.controller = controller;
     }
-    
-    
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -99,7 +99,7 @@ public class ChatPanel extends javax.swing.JPanel implements ChangeListener, Run
 private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
     controller.sendMessage(new ChatMessage(model.getName(), jTextField1.getText()));
     jTextField1.setText("");
-    
+
 
 
 }//GEN-LAST:event_jButton1ActionPerformed
@@ -117,9 +117,10 @@ private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
 
     @Override
     public void run() {
+
         jTextArea1.setText("");
         for (ChatMessage s : model.getMessage()) {
-            jTextArea1.append(s.getMessage()+"\n");
+            jTextArea1.append(s.getSender()+": "+s.getMessage() + "\n");
         }
     }
 

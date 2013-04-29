@@ -10,6 +10,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
@@ -43,8 +45,11 @@ public class LoginListener implements ActionListener {
         } else {
             final JFrame chatvenster = new JFrame("Chatvenster");
             chatvenster.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-            chatvenster.add(chat.ChatPanel.createChat("Chatvenster"));
+            try {
+                chatvenster.add(chat.ChatPanel.createChat(InetAddress.getLocalHost().getHostName().toString()+"/"+usernametf.getText()));
+            } catch (UnknownHostException ex) {
+                Logger.getLogger(LoginListener.class.getName()).log(Level.SEVERE, null, ex);
+            }
             JMenuBar mb = new JMenuBar();
             chatvenster.setJMenuBar(mb);
             JMenu menu = new JMenu("Menu");

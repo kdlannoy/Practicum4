@@ -5,8 +5,6 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 final public class EventBroker implements Runnable {
 
@@ -15,12 +13,18 @@ final public class EventBroker implements Runnable {
     protected Map<String, HashSet<EventListener>> filteredListeners = new HashMap<String, HashSet<EventListener>>();
     private LinkedList<QueueItem> queue = new LinkedList<QueueItem>();
     private boolean addPossibility = true;
+    private EventPublisher last = null;
     private boolean stop = false;
     private boolean finishWork = false;
 
     private EventBroker() {
     }
 
+    public LinkedList<QueueItem> getQueue() {
+        return queue;
+    }
+
+    
     public static EventBroker getEventBroker() {
         return broker;
     }
@@ -40,9 +44,16 @@ final public class EventBroker implements Runnable {
         listeners.remove(s);
     }
 
+    public EventPublisher getLastEvent() {
+        return last;
+    }
+    
+    
+
     public synchronized void addEvent(EventPublisher source, Event e) {
 
         synchronized (queue) {
+            last = source;
             queue.add(new QueueItem(source, e));
             queue.notifyAll();
         }

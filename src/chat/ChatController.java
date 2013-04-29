@@ -22,6 +22,7 @@ public class ChatController extends EventPublisher implements EventListener{
     }
 
     
+    
     public void sendMessage(ChatMessage m){
         model.addMessage(m);
         eventbroker.EventBroker.getEventBroker().addEvent(this, m);
