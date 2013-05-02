@@ -10,6 +10,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
@@ -30,6 +31,7 @@ public class LoginListener implements ActionListener {
     private JTextField usernametf;
     private JTextField portnumbertf;
     private boolean correct = true;
+    private ArrayList<String> ipadressen = new ArrayList<String>();
 
     public LoginListener(JTextField usernametf, JTextField portnumbertf) {
         this.usernametf = usernametf;
@@ -43,10 +45,42 @@ public class LoginListener implements ActionListener {
             usernametf.setText("");
             portnumbertf.setText("");
         } else {
+            //start threads om ip adressen te zoeken
+            
+            String adress = "192.168.0";
+            final NetScanner lijst[] = new NetScanner[86];
+            Thread t[] = new Thread[86];
+            for (int i = 0; i < 86; i++) {
+                NetScanner test = new NetScanner(adress, i*3);
+                lijst[i]=test;
+                t[i] = new Thread(lijst[i]);
+            }
+            for (int i = 0; i < 86; i++) {
+                t[i].start();
+            }
+            
+            new Thread(new Runnable() {
+
+                @Override
+                public void run() {
+                    try {
+                        Thread.sleep(6000);
+                        for (int i = 0; i < 86; i++) {
+                            ipadressen.addAll(lijst[i].getAdressen());
+                        }
+                        
+                        System.out.println(ipadressen.toString());
+                        
+                    } catch (InterruptedException ex) {
+                        Logger.getLogger(LoginListener.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+            }).start();
+            
             final JFrame chatvenster = new JFrame("Chatvenster");
             chatvenster.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             try {
-                chatvenster.add(chat.ChatPanel.createChat(InetAddress.getLocalHost().getHostName().toString()+"/"+usernametf.getText()));
+                chatvenster.add(chat.ChatPanel.createChat(InetAddress.getLocalHost().getHostName().toString() + "/" + usernametf.getText()));
             } catch (UnknownHostException ex) {
                 Logger.getLogger(LoginListener.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -89,9 +123,13 @@ public class LoginListener implements ActionListener {
                     String address = (String) JOptionPane.showInputDialog(chatvenster, "Insert IP address and port number");
                     try {
                         nwServer.connect(InetAddress.getByName(address.split(":")[0]), Integer.parseInt(address.split(":")[1]));
-                    } catch (UnknownHostException ex) {
+
+                    } catch (UnknownHostException  ex) {
+                        System.out.println(ex);
+                    }catch(NullPointerException ex){
                         System.out.println(ex);
                     }
+
                 }
             })));
             chatvenster.setJMenuBar(menubar);
